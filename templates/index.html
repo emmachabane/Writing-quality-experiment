@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,71 +9,43 @@
     <div class="container" style="width:800px;text-align:center;margin:0 auto;outline: dashed 1px black;padding:10px 10px 10px 10px;">
         <div id="acknowledgment" style="text-align:left;margin:0 auto;width:700px;">
             <h1>Informed consent to participate in this study</h1>
-                    <p>
-                    <div style="max-width: 35em;padding-top:30px;">
-                        <p>This HIT is part of an MIT scientific research project. Your decision to complete
-                        this HIT is voluntary. There is no way for us to identify you.</p>
-            
-                        <p>The only information we will have, in addition to your responses, is the time at
-                        which you completed the survey and generic non-identifiable information about your computer
-                        such as its resolution and browser version number.</p>
-            
-                        <p>The results of the research may be
-                        presented at scientific meetings or published in scientific journals.</p>
-            
-                        <p>The responses collected in this experiment will be released to the scientific
-                        community and the public.</p>
-            
-                        <p>Clicking on the 'SUBMIT' button on the bottom of this page indicates that you
-                        are at least 18 years of age and agree to complete this HIT voluntarily.</p>
-            
-                        <p>
-            <input style="cursor:pointer;" id="flash_check" type="checkbox" onclick="$('#agree').prop('disabled', function(i, v) { return !v; });"/> <span onclick="$('#flash_check').click();" style="cursor: pointer;"><b>I agree</b></span>
-                        </p>
-            <button class="btn btn-primary" id="agree" onclick="showInstructions();" disabled>Submit</button>
-                        </div>
+            <div style="max-width: 35em;padding-top:30px;">
+                <p>This HIT is part of an MIT scientific research project. Your decision to complete this HIT is voluntary. There is no way for us to identify you.</p>
+                <p>The only information we will have, in addition to your responses, is the time at which you completed the survey and generic non-identifiable information about your computer such as its resolution and browser version number.</p>
+                <p>The results of the research may be presented at scientific meetings or published in scientific journals.</p>
+                <p>The responses collected in this experiment will be released to the scientific community and the public.</p>
+                <p>Clicking on the 'SUBMIT' button on the bottom of this page indicates that you are at least 18 years of age and agree to complete this HIT voluntarily.</p>
+                <p>
+                    <input style="cursor:pointer;" id="flash_check" type="checkbox" onclick="$('#agree').prop('disabled', function(i, v) { return !v; });"/> 
+                    <span onclick="$('#flash_check').click();" style="cursor: pointer;"><b>I agree</b></span>
+                </p>
+                <button class="btn btn-primary" id="agree" onclick="showInstructions();" disabled>Submit</button>
+            </div>
         </div>
-
-        <div id="instructions" style="display:none;text-align:left;margin:0 auto;width:700px;">
-            <h1>Instructions</h1>
-            <p>
-                PLEASE READ THE FOLLOWING INSTRUCTIONS CAREFULLY
-                BEFORE BEGINNING:
-            </p>
-            <p>
-                You are about to be shown series of two extracts. Please
-                read those closely.
-            </p>
-            <p>
-                Each extract provided is the start of a short story submitted to a writing competition. We will show you pairs of extracts on the screen. 
-                Your task is to compare the overall writing quality of those two extracts, and pick the option that most closely matches your opinion.
-                There is no correct answer, we are only interested in how you would assess the quality of these extracts.
-            </p>
-            <p>
-                Please read the extracts carefully and compare them.
-                Your performance will be recorded and
-                analyzed. If you do not take the task seriously we
-                will know and will have to reject your work.
-            </p>
-            <p>
-                Thank you!
-            </p>
-            <button onclick="initializeComparison()">Start Tasks</button>
-        </div>
-
-        <div id="comparison" style="display:none;text-align:left;margin:0 auto;width:700px;">
-            <h1>Sentence Comparison Task</h1>
-            <div id="text_pairs"></div>
-            <button onclick="submitResults()">Next</button>
-        </div>
-
-        <div id="thank you" style="display:none;text-align:left;margin:0 auto;width:700px;">
-            <h1>Thank you for your participation!</h1>
-            <p> Your responses have been successfully recorded. You may now close the page.</p>
-       
-        </div>
+        <form action="/submit_responses" method="post">
+            <input type="hidden" name="batch_id" value="{{ rand_HIT }}">
+            <div id="hiddenInputs"></div> <!-- store all answers to radio btns -->
+            <div id="instructions" style="display:none;text-align:left;margin:0 auto;width:700px;">
+                <h1>Instructions</h1>
+                <p>PLEASE READ THE FOLLOWING INSTRUCTIONS CAREFULLY BEFORE BEGINNING:</p>
+                <p>You are about to be shown a series of two extracts. Please read those closely.</p>
+                <p>Each extract provided is the start of a short story submitted to a writing competition. We will show you pairs of extracts on the screen. Your task is to compare the overall writing quality of those two extracts, and pick the option that most closely matches your opinion. There is no correct answer, we are only interested in how you would assess the quality of these extracts.</p>
+                <p>Please read the extracts carefully and compare them. Your performance will be recorded and analyzed. If you do not take the task seriously we will know and will have to reject your work.</p>
+                <p>Thank you!</p>
+                <button type="button" onclick="initializeComparison()">Start Tasks</button>
+            </div>
+            <div id="comparison" style="display:none;text-align:left;margin:0 auto;width:700px;">
+                <h1>Sentence Comparison Task</h1>
+                <div id="text_pairs"></div>
+                <button type="button" id="nextBtn" onclick="submitResults()" disabled>Next</button>
+            </div>
+            <div id="thank_you" style="display:none;text-align:left;margin:0 auto;width:700px;">
+                <h1>Thank you for your participation in this research!</h1>
+                <p>Please click the 'Submit All Responses' button below to record your answers.</p>
+                <button type="submit">Submit All Responses</button>
+            </div>
+        </form>
     </div>
-
     <script>
         let currentIndex = 0;
         let rand_HIT = {{ rand_HIT }};
@@ -91,55 +62,57 @@
         }
     
         function loadTextPairs() {
-            $.ajax({
-                url: '/get_text_pairs',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ index: currentIndex, rand_HIT: rand_HIT }),
-                success: function(data) {
-                    if (data) {
-                        $('#text_pairs').html(`<p><b>Text 1:</b> "${data.t1_text}"</p>
-                                               <p><b>Text 2:</b> "${data.t2_text}"</p>
-                                               <p>Please choose the option that most closely matches your assessment of these two extracts:</p>
-                                               <input type="radio" name="comparison" value="left-definitely" onclick="enableNext()"> Text 1 is definitely better than Text 2.<br>
-                                               <input type="radio" name="comparison" value="left-slightly" onclick="enableNext()"> Text 1 is slightly better than Text 2.<br>
-                                               <input type="radio" name="comparison" value="right-slightly" onclick="enableNext()"> Text 2 is slightly better than Text 1.<br>
-                                               <input type="radio" name="comparison" value="right-definitely" onclick="enableNext()"> Text 2 is definitely better than Text 1.<br>`);
-                        currentIndex++;
-                    }
-                }
-            });
-        }
-    
-        function enableNext() {
-            document.getElementById('nextBtn').disabled = false;
-        }
-    
-        function submitResults() {
-            // Check if a radio is selected
-            const radioOptions = document.getElementsByName('comparison');
-            let radioChecked = false;
-            for (const option of radioOptions) {
-                if (option.checked) {
-                    radioChecked = true;
-                    break;
-                }
+    $.ajax({
+        url: '/get_text_pairs',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ index: currentIndex, rand_HIT: rand_HIT }),
+        success: function(data) {
+            if (data) {
+                $('#text_pairs').html(`<p><b>Text 1:</b> "${data.t1_text}"</p>
+                                       <p><b>Text 2:</b> "${data.t2_text}"</p>
+                                       <p>Please choose the option that most closely matches your assessment of these two extracts:</p>
+                                       <input type="radio" name="task${currentIndex+1}" value="1" onclick="enableNext()"> Text 1 is definitely better than Text 2.<br>
+                                       <input type="radio" name="task${currentIndex+1}" value="2" onclick="enableNext()"> Text 1 is slightly better than Text 2.<br>
+                                       <input type="radio" name="task${currentIndex+1}" value="3" onclick="enableNext()"> Text 2 is slightly better than Text 1.<br>
+                                       <input type="radio" name="task${currentIndex+1}" value="4" onclick="enableNext()"> Text 2 is definitely better than Text 1.<br>`);
+                currentIndex++;
+                $('#nextBtn').prop('disabled', true); 
             }
-            // If radio has been selected, go to next task page or finish page
-            if (radioChecked) {
+        }
+    });
+}
+
+        function enableNext() {
+            $('#nextBtn').prop('disabled', false);
+        }
+
+        function submitResults() {
+            const selectedValue = $(`input[name='task${currentIndex}']:checked`).val();
+            if (selectedValue) {
+                // Keep track of all answers 
+                const inputHtml = `<input type="hidden" name="task${currentIndex}" value="${selectedValue}">`;
+                $('#hiddenInputs').append(inputHtml);
+
                 if (currentIndex < 10) {
-                    loadTextPairs(); 
+                    loadTextPairs();
                 } else {
-                    document.getElementById('comparison').style.display = 'none';
-                    document.getElementById('thank you').style.display = 'block';
+                    $('#comparison').hide();
+                    $('#thank_you').show();
                 }
             } else {
                 alert("Please select an option before proceeding to the next task.");
             }
         }
-    </script>
-    
 
-    
+
+
+    </script>
 </body>
 </html>
+
+
+
+
+
+
